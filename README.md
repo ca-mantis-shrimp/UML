@@ -1,4 +1,4 @@
-```uml
+```
 @startuml
 title Objects and Interfaces
 
