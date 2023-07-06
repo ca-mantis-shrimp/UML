@@ -1,0 +1,108 @@
+@startuml
+!theme reddress-lightred
+package graph_db_interface {
+  package querying {
+    interface ConnectedVertexQuerying {
+      +get_all_outbound_vertices\n\
+      (&self,id: Uuid)\n\
+      -> Result<Vec<Vertex>, Box<dyn Error>>
+      +get_all_inbound_vertices\n\
+      (&self, id: Uuid)\n\
+      -> Result<Vec<Vertex>, Box<dyn Error>>
+    }
+    interface MultipleVertexQuerying {
+      +get_all_vertices(&self)->Vec<Vertex>
+      +get_all_vertex_properties(&self)->Vec<Vertex>
+      +get_set_of_vertices(&self, vertices: Vec<Uuid>)
+      +get_vertices_of_type(&self, vertex_type: &str)->Vec<Vertex>
+    }
+    interface SingleVertexQuerying {
+      +get_vertex_type(&self, id: Uuid)->Vertex
+      +get_all_properties(&self, id: Uuid)->Vertex
+      +get_property_value(&self, id: Uuid, property_name: String)->Vertex
+    }
+    interface GraphEdgeQuerying {
+      +get_all_outbound_edges\n\
+      (&self, id: Uuid)\n\
+      ->Result<Vec<Edge>, <box dyn Error>>
+      +get_all_incoming_edges\n\
+      (&self, id: Uuid)\n\
+      ->Result<Vec<Edge>, <box dyn Error>>
+      +get_incoming_edges_of_type\n\
+      (&self, id: Uuid, edge_type: &str)\n\
+      ->Result<Vec<Edge>, <box dyn Error>>
+      +get_outgoing_edges_of_type\n\
+      (&self, id: Uuid, edge_type: &str)\n\
+      ->Result<Vec<Edge>, <box dyn Error>>
+    }
+    ConnectedVertexQuerying --* MultipleVertexQuerying
+    ConnectedVertexQuerying --* GraphEdgeQuerying
+  }
+  package updates {
+    interface VertexUpdates {
+      +set_vertex_property\n\
+      (&self, vertex_id: Uuid, property_name: &str, property_value: Value)\n\
+      -> Result<(), Box<dyn Error>>
+    }
+  }
+
+  package insertion {
+    interface VertexCreation {
+      +create_vertex_by_type\n\
+      (&self, vertex_type: String)\n\
+      -> Result<Uuid, Box<dyn Error>>
+      +create_vertex_by_type_with_properties(\n\
+      &self,vertex_type: String, properties: Vec<Property>)\n\
+      ->Result<Uuid, Box<dyn Error>>
+    }
+  }
+  package vertexes {
+    class Vertex {
+      +id: Uuid
+      +type: String
+      +properties: Vec<Property>
+      +default() -> Vertex
+    }
+    class Property {
+      +name: String
+      +value: Value
+      +default() -> Property
+    }
+
+    enum Value {
+      Bool(bool)
+      Integer(usize)
+      String(String)
+    }
+
+    enum ConversionError {
+      WrongInputType
+      InvalidValue
+      +Display()
+    }
+
+    Vertex --* Property
+    Property --* Value
+    Value --* ConversionError
+  }
+  package Edge {
+    class Edge {
+      -inbound_id: Uuid
+      -type: String
+      -outbound_id: Uuid
+      +set_inbound_id(&mut self, id: Uuid) -> Self
+      +set_outbound_id(&mut self, id: Uuid) -> Self
+      +set_type(&mut self, edge_type: &str) -> Self
+      +get_inbound_id(&self) -> Uuid
+      +get_outbound_id(&self) -> Uuid
+      +get_type(&self) -> String
+    }
+  }
+
+  MultipleVertexQuerying --o Vertex 
+  SingleVertexQuerying --* Vertex 
+  GraphEdgeQuerying --o Edge
+  VertexUpdates --* Value
+  VertexCreation --o Property
+}
+@enduml
