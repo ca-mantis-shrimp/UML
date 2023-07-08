@@ -14,10 +14,10 @@ package Todoist {
     +load_opts(opts: function)
   }
   class queries {
-    +get_all_projects(opts)
-    +get_all_tasks(opts, project_id)
-    +get_all_filters(opts)
-    -get_api_key(opts)
+    +get_all_projects(opts)->[Project]
+    +get_all_tasks(opts, project_id)->[Task]
+    +get_all_filters(opts)->[Filter]
+    -get_api_key(api_key_opts)
   }
   package config {
     class Config {
@@ -45,6 +45,7 @@ package Todoist {
     }
     Config --o Defaults
     Defaults --o api_key
+    Defaults --o keymaps
     Defaults --o Ui
   }
   package commands {
@@ -53,18 +54,19 @@ package Todoist {
       -create_toggle_project_list()
       -create_open_project_list()
       -create_close_project_list()
+      -get_api_key(api_key)
     }
   }
   class Ui {
-    +create_float(opts)
-    +create_side-bar(opts)
+    +create_float(ui_opts, data)
+    +create_side-bar(ui_opts, data)
   }
   Api o-- Init
   queries o-- Init 
   Ui o-- Init
   commands o-- Init
   Api o-- commands
-  config o-- Init
+  Config o-- Init
 }
 package plenary {
   package curl {
