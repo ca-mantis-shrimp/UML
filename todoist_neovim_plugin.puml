@@ -1,0 +1,89 @@
+@startuml
+!theme reddress-lightred
+package Todoist {
+  class Init {
+    +toggle_project_list
+    +open_project_list
+    +close_project_list
+    +setup(opts)
+  }
+  class Api {
+    +toggle_project_list(query_func(string): function, ui_function(string): function, opts)
+    +open_project_list(query_func: function, ui_function: function, opts)
+    +close_project_list(ui:function, opts)
+    +load_opts(opts: function)
+  }
+  class queries {
+    +get_all_projects(opts)
+    +get_all_tasks(opts, project_id)
+    +get_all_filters(opts)
+    -get_api_key(opts)
+  }
+  package config {
+    class Config {
+      +defaults 
+      +setup(opts)
+    }
+    class Defaults {
+      +api_key
+      +ui
+    }
+    class api_key {
+      +api_key_env_var: string
+      +api_key_file_path: string
+    }
+    class Ui {
+      +format: string
+    }
+
+    class keymaps {
+      close_project_list: string
+      delete: string
+      yank: string
+      open_in_buffer: string
+      sync: string
+    }
+    Config --o Defaults
+    Defaults --o api_key
+    Defaults --o Ui
+  }
+  package commands {
+    class Commands {
+      +load_commands()
+      -create_toggle_project_list()
+      -create_open_project_list()
+      -create_close_project_list()
+    }
+  }
+  class Ui {
+    +create_float(opts)
+    +create_side-bar(opts)
+  }
+  Api o-- Init
+  queries o-- Init 
+  Ui o-- Init
+  commands o-- Init
+  Api o-- commands
+  config o-- Init
+}
+package plenary {
+  package curl {
+    class Curl {
+      +run(opts)
+    }
+  }
+}
+
+package nui {
+  class floats {
+    +open_float(opts)
+    +close_float(opts)
+  }
+  class side-bar {
+    +open_side_bar(opts)
+    +close_side_bar(opts)
+  }
+}
+Todoist.queries --o plenary.curl
+Todoist.Ui --o nui
+@enduml
